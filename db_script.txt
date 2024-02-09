@@ -1,0 +1,54 @@
+-- Define ENUM type for attendee Status
+CREATE TYPE attendee_status_enum AS ENUM ('Going', 'Maybe', 'Not Going');
+
+-- Define ENUM type for User Roles
+CREATE TYPE user_role_enum AS ENUM ('Super Admin', 'Admin', 'User', 'Guest');
+
+-- Create User Table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
+    password VARCHAR(255) NOT NULL,
+    role user_role_enum DEFAULT 'User',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create Event Table
+CREATE TABLE event (
+    id SERIAL PRIMARY KEY,
+    organizer_id INTEGER REFERENCES users(id),
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    date DATE,
+    time TIME,
+    location VARCHAR(255),
+    max_attendees INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create Attendee Table
+CREATE TABLE attendee (
+    id SERIAL PRIMARY KEY,
+    event_id INTEGER REFERENCES event(id),
+    user_id INTEGER REFERENCES users(id),
+    status attendee_status_enum,
+    registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create Comment Table
+CREATE TABLE comment (
+    id SERIAL PRIMARY KEY,
+    event_id INTEGER REFERENCES event(id),
+    user_id INTEGER REFERENCES users(id),
+    comment_text TEXT,
+    comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

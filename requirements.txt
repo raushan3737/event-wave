@@ -16,3 +16,6 @@ jinja2
 python-jose[cryptography]
 sqlalchemy
 alembic
+python-dotenv
+starlette
+jose

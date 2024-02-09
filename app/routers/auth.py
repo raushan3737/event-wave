@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from app.database import SessionLocal
-from app.models.models import Users
+from app.models.models import User
 
 router = APIRouter(
     prefix="/auth",
@@ -45,7 +45,6 @@ class CreateUserRequest(BaseModel):
     last_name: str
     password: str
     role: str
-    phone_number: str
 
 
 class Token(BaseModel):
@@ -53,15 +52,11 @@ class Token(BaseModel):
     token_type: str
 
 
-# bcrypt_context.verify(password, hashed_password): Internally, verify hash the password and
-# check with hashed_password if it matches return true else false.
-
-
 def authenticate_user(username: str, password: str, db):
-    user = db.query(Users).filter(Users.username == username).first()
+    user = db.query(User).filter(User.username == username).first()
     if not user:
         return False
-    if not bcrypt_context.verify(password, user.hashed_password):
+    if not bcrypt_context.verify(password, user.password):
         return False
     return user
 
@@ -97,15 +92,13 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
-    create_user_model = Users(
+    create_user_model = User(
         email=create_user_request.email,
         username=create_user_request.username,
         first_name=create_user_request.first_name,
         last_name=create_user_request.last_name,
         role=create_user_request.role,
-        hashed_password=bcrypt_context.hash(create_user_request.password),
-        is_active=True,
-        phone_number=create_user_request.phone_number
+        password=bcrypt_context.hash(create_user_request.password),
     )
     db.add(create_user_model)
     db.commit()
@@ -114,11 +107,10 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
                                  , db: db_dependency):
-    # print(f"username: {form_data.username} and password: {form_data.password}")
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Could not validate the user")
 
-    token = create_access_token(user.username, user.id, user.role, timedelta(minutes=20))
+    token = create_access_token(user.username, user.id, user.role, timedelta(minutes=2000))
     return {"access_token": token, "token_type": "Bearer"}
