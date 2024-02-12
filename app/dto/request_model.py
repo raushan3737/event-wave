@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 
 class EventRegistrationRequest(BaseModel):
@@ -9,12 +10,21 @@ class EventRegistrationRequest(BaseModel):
 
 
 class CreateUserRequest(BaseModel):
-    username: str
-    email: str
-    first_name: str
-    last_name: str
-    password: str
+    username: str = Field(min_length=3, max_length=100)
+    email: EmailStr
+    first_name: str = Field(min_length=3, max_length=100)
+    last_name: str = Field(min_length=3, max_length=100)
+    password: str = Field(min_length=3, max_length=100)
     role: str
+
+
+class UpdateUserInfoRequest(BaseModel):
+    email: Optional[str] = EmailStr
+    first_name: Optional[str] = Field(min_length=3, max_length=100)
+    last_name: Optional[str] = Field(min_length=3, max_length=100)
+
+    class Config:
+        orm_mode = True
 
 
 class Token(BaseModel):
@@ -29,4 +39,3 @@ class CreateEventRequest(BaseModel):
     time: datetime
     location: str = Field(min_length=3, max_length=255)
     max_attendees: int = Field(lt=1000)
-    organiser_id: int = Field(gt=0)

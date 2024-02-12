@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from app.dto.request_model import CreateUserRequest
-from app.dto.response_model import TokenResponse
+from app.dto.response_model import TokenResponse, UserResponse
 from app.service.auth_service import AuthService
 from app.service.database_service import DatabaseService
 
@@ -18,7 +18,8 @@ def get_auth_service(db: Session = Depends(DatabaseService.get_db)) -> AuthServi
     return AuthService(db)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserResponse,
+             response_model_exclude={"id", "password"})
 async def create_user(
         create_user_request: CreateUserRequest,
         auth_service: AuthService = Depends(get_auth_service)

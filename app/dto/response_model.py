@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, time
 
 from pydantic import BaseModel
 
@@ -8,31 +8,26 @@ class TokenResponse(BaseModel):
     token_type: str
 
 
-class EventRegistrationResponse(BaseModel):
-    event_id: int
-    user_id: int
-    status: str
-    registration_date: datetime
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        orm_mode = True
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    first_name: str
+    last_name: str
+    role: str
 
 
 class EventResponse(BaseModel):
     title: str
     description: str
-    date: str
-    time: str
+    date: date
+    time: time
     location: str
     max_attendees: int
     organizer_id: int
 
-    @classmethod
-    def from_orm(cls, obj):
-        obj.time = obj.time.strftime("%H:%M:%S") if obj.time else None
-        return super().from_orm(obj)
 
-    class Config:
-        orm_mode = True
+class AttendeeResponse(BaseModel):
+    user_id: int
+    event_id: int
+    status: str
